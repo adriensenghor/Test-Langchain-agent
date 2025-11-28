@@ -1,0 +1,27 @@
+# --- 1. Sécurité (CRITIQUE) ---
+.env
+.env.*
+! .env.example
+
+# --- 2. Python & Venv ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# --- 3. LangGraph & LangChain Studio ---
+# Ce dossier contient les build docker temporaires du studio
+.langgraph_api/
+# Fichiers de cache locaux
+.langchain/
+
+# --- 4. OS & IDE ---
+.DS_Store
+.vscode/
+.idea/
+
+# --- 5. Logs & Bases de données locales ---
+*.log
+*.sqlite
