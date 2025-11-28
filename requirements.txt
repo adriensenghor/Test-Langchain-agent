@@ -6,3 +6,4 @@ python-dotenv
 langsmith
 fastapi
 uvicorn
+langgraph-cli[inmem]
