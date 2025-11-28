@@ -1,6 +1,7 @@
 langchain-anthropic
 langchain-core
-langgraph
+langgraph[sqlite]
+langgraph-checkpoint-sqlite
 pydantic
 python-dotenv
 langsmith

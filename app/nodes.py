@@ -7,30 +7,40 @@ from app.prompts import SYSTEM_PROMPT
 # Définition Pydantic pour l'extraction (Structured Output)
 class ProfileUpdate(BaseModel):
     """Mise à jour des infos du profil immobilier."""
-    budget: Optional[str] = Field(description="Budget mentionné (ex: 300k, 250000 euros)")
-    location: Optional[str] = Field(description="Ville ou quartier recherché")
-    maturity: Optional[str] = Field(description="Urgence du projet (ex: 6 mois, urgent)")
+    where: Optional[str] = Field(
+        description="Où la personne veut acheter. Si ce n'est pas précisé, laisse cette valeur vide."
+    )
+    when: Optional[str] = Field(
+        description="Quand (délai, date, horizon). Si ce n'est pas précisé, laisse cette valeur vide."
+    )
+    budget: Optional[str] = Field(
+        description="Budget mentionné (ex: 300k, 250000 euros). Si ce n'est pas précisé, laisse cette valeur vide."
+    )
+    how: Optional[str] = Field(
+        description="Comment le projet sera financé (prêt, cash, etc.). Si ce n'est pas précisé, laisse cette valeur vide."
+    )
 
 # --- NODE 1: EXTRACTEUR ---
 def extract_info_node(state: AgentState):
     model = get_model(temperature=0)
     
-    # On force Claude à sortir du JSON structuré selon ProfileUpdate
     extractor = model.with_structured_output(ProfileUpdate)
-    
-    # On lui donne juste le dernier message de l'utilisateur pour analyse
     last_message = state["messages"][-1]
     result = extractor.invoke([last_message])
     
-    # On fusionne avec les données existantes
-    current_profile = state.get("profile", {})
-    new_profile = {
-        "budget": result.budget or current_profile.get("budget"),
-        "location": result.location or current_profile.get("location"),
-        "maturity": result.maturity or current_profile.get("maturity"),
+    # Create update dict
+    update = {
+        "where": result.where,
+        "when": result.when,
+        "budget": result.budget,
+        "how": result.how
     }
     
-    return {"profile": new_profile}
+    # Filter out None values immediately
+    # This ensures we send {"where": "Madrid"} instead of {"where": "Madrid", "budget": None}
+    clean_update = {k: v for k, v in update.items() if v is not None and v != ""}
+    
+    return {"profile": clean_update}
 
 # --- NODE 2: CHATBOT ---
 def chatbot_node(state: AgentState):
